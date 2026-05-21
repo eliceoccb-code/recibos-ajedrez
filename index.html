@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Recibos · Clases de Ajedrez</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #f5f4f0;
+    color: #1a1a18;
+    min-height: 100vh;
+    padding: 2rem 1rem;
+  }
+
+  .container {
+    max-width: 560px;
+    margin: 0 auto;
+  }
+
+  header {
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .logo {
+    width: 40px;
+    height: 40px;
+    background: #1a1a18;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+
+  header h1 {
+    font-size: 17px;
+    font-weight: 600;
+    color: #1a1a18;
+  }
+
+  header p {
+    font-size: 12px;
+    color: #888780;
+    margin-top: 1px;
+  }
+
+  .card {
+    background: #fff;
+    border-radius: 14px;
+    border: 0.5px solid #e0dfd8;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  label {
+    display: block;
+    font-size: 11px;
+    font-weight: 500;
+    color: #888780;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 5px;
+  }
+
+  input, select {
+    width: 100%;
+    padding: 9px 12px;
+    font-size: 14px;
+    border: 0.5px solid #d3d1c7;
+    border-radius: 8px;
+    background: #faf9f6;
+    color: #1a1a18;
+    outline: none;
+    font-family: inherit;
+    transition: border-color 0.15s;
+  }
+
+  input:focus, select:focus {
+    border-color: #1a1a18;
+    background: #fff;
+  }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+  .field { margin-bottom: 12px; }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 8px;
+    cursor: pointer;
+    border: 0.5px solid #d3d1c7;
+    background: #fff;
+    color: #1a1a18;
+    font-family: inherit;
+    transition: background 0.15s, transform 0.1s;
+  }
+
+  .btn:active { transform: scale(0.98); }
+  .btn:hover { background: #f5f4f0; }
+
+  .btn-primary {
+    background: #1a1a18;
+    color: #fff;
+    border-color: #1a1a18;
+    width: 100%;
+    justify-content: center;
+    padding: 12px;
+    font-size: 15px;
+    margin-top: 4px;
+  }
+
+  .btn-primary:hover { background: #2e2e2b; }
+
+  .section-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: #888780;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 1rem;
+  }
+
+  /* Recibo */
+  #recibo-section { display: none; }
+
+  .recibo-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding-bottom: 1rem;
+    margin-bottom: 1rem;
+    border-bottom: 0.5px solid #e0dfd8;
+  }
+
+  .recibo-title { font-size: 17px; font-weight: 600; }
+  .recibo-subtitle { font-size: 12px; color: #888780; margin-top: 2px; }
+  .recibo-num-label { font-size: 11px; color: #888780; text-align: right; }
+  .recibo-num { font-size: 16px; font-weight: 600; text-align: right; }
+
+  .info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 1rem;
+  }
+
+  .info-label { font-size: 11px; color: #888780; margin-bottom: 2px; }
+  .info-value { font-size: 14px; font-weight: 500; }
+
+  .detalle {
+    background: #f5f4f0;
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 1rem;
+  }
+
+  .detalle-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    padding: 3px 0;
+  }
+
+  .detalle-row span:first-child { color: #888780; }
+
+  .detalle-divider {
+    border: none;
+    border-top: 0.5px solid #d3d1c7;
+    margin: 8px 0;
+  }
+
+  .detalle-row.bold { font-weight: 600; }
+
+  .recibo-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .monto-label { font-size: 11px; color: #888780; margin-bottom: 2px; }
+  .monto-value { font-size: 26px; font-weight: 600; }
+
+  .badge {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 14px;
+    border-radius: 20px;
+  }
+
+  .badge-pagado { background: #eaf3de; color: #3b6d11; }
+  .badge-pendiente { background: #faeeda; color: #854f0b; }
+
+  .emision {
+    font-size: 11px;
+    color: #b4b2a9;
+    text-align: right;
+    margin-top: 1rem;
+  }
+
+  .actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+  }
+
+  .hint {
+    font-size: 12px;
+    color: #b4b2a9;
+    margin-top: 6px;
+    line-height: 1.5;
+  }
+
+  @media (max-width: 420px) {
+    .grid-3 { grid-template-columns: 1fr 1fr; }
+    .grid-3 .field:last-child { grid-column: span 2; }
+    .info-grid { grid-template-columns: 1fr; }
+  }
+
+  @media print {
+    body { background: #fff; padding: 0; }
+    #form-section, .actions, header { display: none !important; }
+    #recibo-section { display: block !important; }
+    .card { border: 1px solid #ccc; box-shadow: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <header>
+    <div class="logo">♟</div>
+    <div>
+      <h1>Recibos de pago</h1>
+      <p>Clases de ajedrez online · Lun · Mié · Vie</p>
+    </div>
+  </header>
+
+  <!-- FORMULARIO -->
+  <div id="form-section">
+    <div class="card">
+      <p class="section-title">Datos del estudiante</p>
+      <div class="grid-2">
+        <div>
+          <label>Nombre</label>
+          <input type="text" id="nombre" placeholder="Ej: Carlos Mamani">
+        </div>
+        <div>
+          <label>Celular</label>
+          <input type="text" id="celular" placeholder="Ej: 70012345">
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <p class="section-title">Período y clases</p>
+      <div class="grid-2">
+        <div>
+          <label>Desde</label>
+          <input type="date" id="fecha_inicio">
+        </div>
+        <div>
+          <label>Hasta</label>
+          <input type="date" id="fecha_fin">
+        </div>
+      </div>
+      <div class="grid-3">
+        <div>
+          <label>Clases del período</label>
+          <input type="number" id="num_clases" placeholder="Ej: 12" min="1">
+        </div>
+        <div>
+          <label>Canceladas</label>
+          <input type="number" id="canceladas" placeholder="0" min="0" value="0">
+        </div>
+        <div>
+          <label>Estado</label>
+          <select id="estado">
+            <option value="pagado">Pagado</option>
+            <option value="pendiente">Pendiente</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <p class="section-title">Pago</p>
+      <div class="grid-2">
+        <div>
+          <label>Monto (Bs)</label>
+          <input type="number" id="monto" placeholder="Ej: 150">
+        </div>
+        <div>
+          <label>Próxima fecha de pago</label>
+          <input type="date" id="prox_pago">
+        </div>
+      </div>
+      <p class="hint">Si hubo clases canceladas, se suman 2 días por cada una a la fecha de próximo pago automáticamente.</p>
+    </div>
+
+    <button class="btn btn-primary" onclick="generarRecibo()">Generar recibo →</button>
+  </div>
+
+  <!-- RECIBO -->
+  <div id="recibo-section">
+    <div class="card" id="recibo-card">
+      <div class="recibo-header">
+        <div>
+          <div class="recibo-title">Recibo de pago</div>
+          <div class="recibo-subtitle">Clases de ajedrez online · Lun · Mié · Vie</div>
+        </div>
+        <div>
+          <div class="recibo-num-label">N°</div>
+          <div class="recibo-num" id="r-num"></div>
+        </div>
+      </div>
+
+      <div class="info-grid">
+        <div>
+          <div class="info-label">Estudiante</div>
+          <div class="info-value" id="r-nombre"></div>
+        </div>
+        <div>
+          <div class="info-label">Celular</div>
+          <div class="info-value" id="r-celular"></div>
+        </div>
+      </div>
+
+      <div class="detalle">
+        <div class="detalle-row">
+          <span>Período</span>
+          <span id="r-periodo"></span>
+        </div>
+        <div class="detalle-row">
+          <span>Clases del período</span>
+          <span id="r-clases"></span>
+        </div>
+        <div class="detalle-row" id="r-canceladas-row">
+          <span>Clases canceladas</span>
+          <span id="r-canceladas"></span>
+        </div>
+        <hr class="detalle-divider">
+        <div class="detalle-row bold">
+          <span>Próximo pago</span>
+          <span id="r-prox-pago"></span>
+        </div>
+      </div>
+
+      <div class="recibo-footer">
+        <div>
+          <div class="monto-label">Total</div>
+          <div class="monto-value" id="r-monto"></div>
+        </div>
+        <div class="badge" id="r-estado-badge"></div>
+      </div>
+
+      <div class="emision" id="r-fecha-emision"></div>
+    </div>
+
+    <div class="actions">
+      <button class="btn" onclick="volverEditar()">← Editar</button>
+      <button class="btn" onclick="copiarTexto()" id="btn-copiar">Copiar para WhatsApp</button>
+      <button class="btn" onclick="window.print()">Guardar PDF</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function getCount() { return parseInt(localStorage.getItem('recibos_count') || '0'); }
+function setCount(n) { localStorage.setItem('recibos_count', n); }
+
+function padNum(n) { return String(n).padStart(4, '0'); }
+
+function formatFecha(dateStr) {
+  if (!dateStr) return '';
+  const [y, m, d] = dateStr.split('-');
+  const meses = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  return parseInt(d) + ' ' + meses[parseInt(m)-1] + ' ' + y;
+}
+
+function sumarDias(dateStr, dias) {
+  const d = new Date(dateStr + 'T12:00:00');
+  d.setDate(d.getDate() + dias);
+  return d.toISOString().split('T')[0];
+}
+
+function generarRecibo() {
+  const nombre = document.getElementById('nombre').value.trim();
+  const celular = document.getElementById('celular').value.trim();
+  const monto = document.getElementById('monto').value.trim();
+  const inicio = document.getElementById('fecha_inicio').value;
+  const fin = document.getElementById('fecha_fin').value;
+  const numClases = parseInt(document.getElementById('num_clases').value) || 0;
+  const canceladas = parseInt(document.getElementById('canceladas').value) || 0;
+  const estado = document.getElementById('estado').value;
+  let proxPago = document.getElementById('prox_pago').value;
+
+  if (!nombre || !monto || !inicio || !fin || !proxPago) {
+    alert('Por favor completa todos los campos obligatorios.');
+    return;
+  }
+
+  if (canceladas > 0) proxPago = sumarDias(proxPago, canceladas * 2);
+
+  const count = getCount() + 1;
+  setCount(count);
+  const anio = new Date().getFullYear().toString().slice(-2);
+  const numRecibo = anio + '-' + padNum(count);
+
+  document.getElementById('r-num').textContent = numRecibo;
+  document.getElementById('r-nombre').textContent = nombre;
+  document.getElementById('r-celular').textContent = celular || '—';
+  document.getElementById('r-periodo').textContent = formatFecha(inicio) + ' – ' + formatFecha(fin);
+  document.getElementById('r-clases').textContent = numClases > 0 ? numClases + ' clases' : '—';
+
+  const cancelRow = document.getElementById('r-canceladas-row');
+  if (canceladas > 0) {
+    cancelRow.style.display = 'flex';
+    document.getElementById('r-canceladas').textContent = canceladas + ' (+' + (canceladas * 2) + ' días compensados)';
+  } else {
+    cancelRow.style.display = 'none';
+  }
+
+  document.getElementById('r-prox-pago').textContent = formatFecha(proxPago);
+  document.getElementById('r-monto').textContent = 'Bs ' + parseFloat(monto).toFixed(2);
+
+  const badge = document.getElementById('r-estado-badge');
+  badge.textContent = estado === 'pagado' ? 'Pagado' : 'Pendiente';
+  badge.className = 'badge ' + (estado === 'pagado' ? 'badge-pagado' : 'badge-pendiente');
+
+  const now = new Date();
+  document.getElementById('r-fecha-emision').textContent =
+    'Emitido el ' + now.toLocaleDateString('es-BO', { day: 'numeric', month: 'long', year: 'numeric' });
+
+  document.getElementById('form-section').style.display = 'none';
+  document.getElementById('recibo-section').style.display = 'block';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function volverEditar() {
+  document.getElementById('form-section').style.display = 'block';
+  document.getElementById('recibo-section').style.display = 'none';
+}
+
+function copiarTexto() {
+  const num = document.getElementById('r-num').textContent;
+  const nombre = document.getElementById('r-nombre').textContent;
+  const celular = document.getElementById('r-celular').textContent;
+  const periodo = document.getElementById('r-periodo').textContent;
+  const clases = document.getElementById('r-clases').textContent;
+  const proxPago = document.getElementById('r-prox-pago').textContent;
+  const monto = document.getElementById('r-monto').textContent;
+  const estado = document.getElementById('r-estado-badge').textContent;
+  const emision = document.getElementById('r-fecha-emision').textContent;
+
+  const txt = `♟ Recibo de Clases de Ajedrez\nN° ${num}\n\nEstudiante: ${nombre}\nCelular: ${celular}\nPeríodo: ${periodo}\nClases: ${clases}\nPróximo pago: ${proxPago}\nTotal: ${monto} — ${estado}\n\n${emision}`;
+
+  navigator.clipboard.writeText(txt).then(() => {
+    const btn = document.getElementById('btn-copiar');
+    btn.textContent = '✓ Copiado';
+    setTimeout(() => { btn.textContent = 'Copiar para WhatsApp'; }, 2500);
+  });
+}
+
+document.getElementById('fecha_inicio').value = new Date().toISOString().split('T')[0];
+document.getElementById('prox_pago').value = new Date().toISOString().split('T')[0];
+</script>
+
+</body>
+</html>
